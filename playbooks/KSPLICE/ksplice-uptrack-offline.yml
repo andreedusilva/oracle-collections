@@ -43,7 +43,7 @@
     package: name=uptrack-offline state=present
 
   - name: Adjust install_on_reboot in uptrack.conf configuration file
-    community.general.ini_file:
+    ini_file:
       dest: /etc/uptrack/uptrack.conf
       section: Settings
       option: install_on_reboot

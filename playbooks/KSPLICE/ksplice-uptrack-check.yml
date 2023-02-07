@@ -11,7 +11,7 @@
 #
 
 ---
-- name: Uptrack Check
+ name: Uptrack Check
   hosts: all
   vars_prompt:
      - name: "save_output"

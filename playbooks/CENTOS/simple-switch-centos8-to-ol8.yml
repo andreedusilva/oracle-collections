@@ -2,10 +2,6 @@
   become: yes
 
   tasks:
-  - name: Unregister Red Hat subscription
-    redhat_subscription:
-      state: absent
-
   - name: Prepare Install folder
     file:
       path: /tmp/install_uln/

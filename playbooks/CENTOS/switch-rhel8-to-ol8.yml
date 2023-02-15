@@ -1,0 +1,62 @@
+- hosts: all
+  become: yes
+
+  tasks:
+  - name: Unregister Red Hat subscription
+    redhat_subscription:
+      state: absent
+
+  - name: Prepare Install folder
+    file:
+      path: /tmp/install_uln/
+      state: directory
+
+  - name: Download and unpackage tar file
+    unarchive:
+      src: https://linux-update.oracle.com/rpms/uln_register_ol8.tgz
+      dest: /tmp/install_uln/
+      remote_src: yes
+
+  - name: Install ULN packages
+    command: 
+      cmd: rpm -Uvh /tmp/install_uln/*.rpm
+      warn: false
+
+  - name: Download GPG KEY
+    get_url:
+      url: https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8
+      dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+
+  - name: Import GPG KEY
+    command: 
+      cmd: gpg --import --import-options show-only /etc/pki/rpm-gpg/RPM-GPG-KEY-oracle 
+      warn: false
+
+  - name: Copy GPG KEY
+    command:
+      cmd: cp /etc/pki/rpm-gpg/RPM-GPG-KEY-oracle /etc/pki/rpm-gpg/RPM-GPG-KEY
+      warn: false
+
+  - name: Create Oracle Linux 8 repo temp file
+    copy:
+      src: /var/lib/ol-automation-manager/projects/switch-rhel-to-ol/files/switch-to-oraclelinux8.repo 
+      dest: /etc/yum.repos.d/
+      owner: root
+      group: root        
+      mode: 0644
+
+  - name: Install all packages for client
+    dnf:
+      name: rhn-client-tools
+      state: latest
+
+  - name: Install OLM CA certificate from server
+    dnf:
+      name: "http://olm210.olsclab.net/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm"
+      state: present
+      disable_gpg_check: yes
+
+  - name: Register with OLM server
+    command: 
+      cmd: rhnreg_ks --serverUrl=http://olm210.olsclab.net/XMLRPC --activationkey=1-oraclelinux8-x86_64 --force
+
